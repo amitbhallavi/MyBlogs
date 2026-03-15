@@ -7,7 +7,7 @@ import LoaderTwo from "./LoaderTwo";
 
 const UserProfilePage = () => {
     // ── Redux hooks ──
-    const navigate = useNavigate();
+   
     const dispatch = useDispatch();
     const { blogs, blogLoading, blogError } = useSelector(state => state.blog);
     const { user } = useSelector(state => state.auth);
@@ -61,7 +61,7 @@ const UserProfilePage = () => {
     // ── Filter ONLY current user's blogs ──
     const userBlogs = blogs.filter(blog => {
         if (!user || !user._id) {
-            navigate("/")
+            console.log("You Logout")
             return false;
         }
         

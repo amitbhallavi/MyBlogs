@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link  } from "react-router-dom";
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { getBlogs, removeBlog, createBlog, updateBlog } from "./features/blogs/blogSlice";
@@ -61,7 +61,7 @@ const UserProfilePage = () => {
     // ── Filter ONLY current user's blogs ──
     const userBlogs = blogs.filter(blog => {
         if (!user || !user._id) {
-            console.log("You Logout")
+            console.warn("You Logout")
             return false;
         }
         

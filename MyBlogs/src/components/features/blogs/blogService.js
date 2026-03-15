@@ -1,5 +1,5 @@
-import axios from "axios";
 const BASE_URL = import.meta.env.VITE_API_URL
+import axios from "axios";
 
 const fetchBlogs = async () => {
     try {
@@ -42,7 +42,7 @@ const createBlog = async (formData, token) => {
     }
 
     try {
-        const response = await axios.post("/api/blogs", formData, options,);
+       const response = await axios.post(`${BASE_URL}/api/blogs`, formData, options);
         return response.data;
     } catch (error) {
         throw error.response?.data || error.message;

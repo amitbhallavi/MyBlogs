@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { Link  } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { getBlogs, removeBlog, createBlog, updateBlog } from "./features/blogs/blogSlice";
@@ -7,7 +7,7 @@ import LoaderTwo from "./LoaderTwo";
 
 const UserProfilePage = () => {
     // ── Redux hooks ──
-   
+    const navigate = useNavigate();
     const dispatch = useDispatch();
     const { blogs, blogLoading, blogError } = useSelector(state => state.blog);
     const { user } = useSelector(state => state.auth);
@@ -37,7 +37,7 @@ const UserProfilePage = () => {
 
     // ── Utility Functions for Profile ──
     const getProfileImage = () => {
-        return user?.profileImage || user?.name ;
+        return user?.profileImage || user?.name;
     };
 
     const getGenderEmoji = () => {
@@ -55,33 +55,39 @@ const UserProfilePage = () => {
     // ── Fetch all blogs on component mount ──
     useEffect(() => {
         dispatch(getBlogs());
-    
+
     }, [dispatch]);
 
+    // useEffect mein check karo
+    useEffect(() => {
+        if (!user || !user._id) {
+            navigate("/")
+        }
+    }, [user, navigate])
     // ── Filter ONLY current user's blogs ──
     const userBlogs = blogs.filter(blog => {
         if (!user || !user._id) {
-            console.warn("You Logout")
+
             return false;
         }
-        
+
         // Try multiple ways to match author
         const blogAuthorId = blog.author?._id || blog.authorId || blog.userId;
         const currentUserId = user._id;
-        
+
         // Also check if author name matches (fallback)
         const blogAuthorName = blog.author?.name || blog.author;
         const currentUserName = user.name || user.username;
-        
+
         const isUserBlogById = blogAuthorId === currentUserId;
         const isUserBlogByName = blogAuthorName && currentUserName && blogAuthorName.toLowerCase() === currentUserName.toLowerCase();
-        
+
         const isUserBlog = isUserBlogById || isUserBlogByName;
-        
+
         // if (isUserBlog) {
         //     console.log("✅ Found user blog:", blog.title, "Author ID:", blogAuthorId, "Author Name:", blogAuthorName);
         // }
-        
+
         return isUserBlog;
     });
 
@@ -143,7 +149,7 @@ const UserProfilePage = () => {
     };
 
     return (
-        
+
         <div style={{ fontFamily: "'DM Sans', sans-serif" }}>
             <style>{`
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Playfair+Display:wght@700;900&display=swap');
@@ -201,7 +207,7 @@ const UserProfilePage = () => {
                                     </h1>
                                     <span className="text-xs font-bold bg-gradient-to-br from-indigo-500 to-purple-600 text-white px-2.5 py-0.5 rounded-full border border-amber-200">Blogger</span>
                                 </div>
-                                <p className="text-white text-sm mb-2">@{user?.name } · Indore, India 🇮🇳</p>
+                                <p className="text-white text-sm mb-2">@{user?.name} · Indore, India 🇮🇳</p>
                                 <p className="text-zinc-600 text-sm max-w-lg">{user?.bio || "Tech enthusiast and blogger. I love sharing my thoughts and experiences through engaging blog posts."}</p>
                                 <div className="flex flex-wrap gap-1.5 mt-2.5">
                                     {["Writing", "Tech", "Blogging"].map(tag => (
@@ -255,13 +261,13 @@ const UserProfilePage = () => {
                     </div>
 
                     {blogLoading && <LoaderTwo />}
-                    
+
                     {blogError && (
                         <div className="flex flex-col items-center justify-center py-16 bg-rose-50 rounded-2xl border border-rose-200">
                             <p className="text-4xl mb-3">⚠️</p>
                             <p className="text-rose-600 font-semibold text-base">Error loading blogs</p>
                             <p className="text-rose-500 text-sm mt-2 max-w-sm text-center">{blogError}</p>
-                            <button 
+                            <button
                                 onClick={() => dispatch(getBlogs())}
                                 className="mt-4 px-4 py-2 bg-rose-500 text-white font-bold text-sm rounded-lg hover:bg-rose-600 transition"
                             >
@@ -269,7 +275,7 @@ const UserProfilePage = () => {
                             </button>
                         </div>
                     )}
-                    
+
                     {!blogLoading && !blogError && userBlogs.length === 0 && (
                         <div className="flex flex-col items-center justify-center py-16 bg-white rounded-2xl border border-dashed border-zinc-200">
                             <p className="text-6xl mb-3">✍️</p>
@@ -277,7 +283,7 @@ const UserProfilePage = () => {
                             <p className="text-zinc-400 text-sm mt-2 max-w-sm text-center">You haven't published any blogs yet. Start creating and sharing your thoughts with the community!</p>
                         </div>
                     )}
-                    
+
                     {!blogLoading && !blogError && userBlogs.length > 0 && (
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                             {userBlogs.map((blog, i) => (
@@ -416,8 +422,8 @@ const UserProfilePage = () => {
                             </p>
                             <div className="flex gap-3">
                                 <button onClick={() => { setShowDeleteModal(false); setEditBlogTarget(null); }} className="flex-1 py-2.5 bg-zinc-100 text-zinc-700 font-bold text-sm rounded-xl hover:bg-zinc-200 transition">Keep It</button>
-                                <button 
-                                    onClick={handleDeleteBlog} 
+                                <button
+                                    onClick={handleDeleteBlog}
                                     className="flex-1 py-2.5 bg-rose-500 text-white font-bold text-sm rounded-xl hover:bg-rose-400 transition shadow-md shadow-rose-200"
                                 >
                                     Yes, Delete
@@ -448,11 +454,11 @@ const UserProfilePage = () => {
                                 <div className="grid grid-cols-2 gap-3">
                                     <div>
                                         <label className="block text-xs font-bold text-zinc-600 uppercase tracking-wide mb-1.5">Full Name</label>
-                                        <input defaultValue={user.name}className="w-full px-3.5 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-sm text-zinc-800 focus:outline-none focus:ring-2 focus:ring-amber-400 transition" />
+                                        <input defaultValue={user.name} className="w-full px-3.5 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-sm text-zinc-800 focus:outline-none focus:ring-2 focus:ring-amber-400 transition" />
                                     </div>
                                     <div>
                                         <label className="block text-xs font-bold text-zinc-600 uppercase tracking-wide mb-1.5">Username</label>
-                                        <input defaultValue={ `@${user.name}`} className="w-full px-3.5 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-sm text-zinc-800 focus:outline-none focus:ring-2 focus:ring-amber-400 transition" />
+                                        <input defaultValue={`@${user.name}`} className="w-full px-3.5 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-sm text-zinc-800 focus:outline-none focus:ring-2 focus:ring-amber-400 transition" />
                                     </div>
                                 </div>
 

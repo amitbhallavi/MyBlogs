@@ -9,7 +9,7 @@ export default defineConfig({
   server: {
     proxy: {
       "/api" : {
-        target: "https://blog-api-74l6.onrender.com",
+         target: env.VITE_API_TARGET,
         secure: false,
         changeOrigin: true,
       }

@@ -1,9 +1,9 @@
 import axios from "axios";
-
+const BASE_URL = import.meta.env.VITE_API_URL
 
 const fetchBlogs = async () => {
     try {
-        const response = await axios.get("/api/blogs");
+        const response = await axios.get(`${BASE_URL}/api/blogs`);
         // console.log("🔍 API Response:", response.data);
         
         // Handle different response formats
@@ -25,7 +25,7 @@ const fetchBlogs = async () => {
 
 
 const fetchBlog = async (id) => {
-    const response = await axios.get(`/api/blogs/${id}`)
+    const response = await axios.get(`${BASE_URL}/api/blogs/${id}`)
     return response.data;
 }
 
@@ -62,7 +62,7 @@ const removeBlog = async (blogId, token) => {
     }
 
     try {
-        const response = await axios.delete(`/api/blogs/${blogId}`, options,);
+        const response = await axios.delete(`${BASE_URL}/api/blogs/${blogId}`, options,);
         return response.data;
     } catch (error) {
         throw error.response?.data || error.message;
@@ -81,18 +81,13 @@ const updateBlog = async (blogId, formData, token) => {
     }
 
     try {
-        const response = await axios.put(`/api/blogs/${blogId}`, formData, options,);
+        const response = await axios.put(`${BASE_URL}/api/blogs/${blogId}`, formData, options,);
         return response.data;
     } catch (error) {
         throw error.response?.data || error.message;
     }
 
 }
-
-
-
-
-
 
 
 

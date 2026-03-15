@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { getBlogs, removeBlog, createBlog, updateBlog } from "./features/blogs/blogSlice";
@@ -7,6 +7,7 @@ import LoaderTwo from "./LoaderTwo";
 
 const UserProfilePage = () => {
     // ── Redux hooks ──
+    const navigate = useNavigate();
     const dispatch = useDispatch();
     const { blogs, blogLoading, blogError } = useSelector(state => state.blog);
     const { user } = useSelector(state => state.auth);
@@ -54,12 +55,13 @@ const UserProfilePage = () => {
     // ── Fetch all blogs on component mount ──
     useEffect(() => {
         dispatch(getBlogs());
+    
     }, [dispatch]);
 
     // ── Filter ONLY current user's blogs ──
     const userBlogs = blogs.filter(blog => {
         if (!user || !user._id) {
-            console.warn("❌ No user logged in");
+            navigate("/")
             return false;
         }
         
@@ -195,7 +197,7 @@ const UserProfilePage = () => {
                             <div className="flex-1 min-w-0 pb-1">
                                 <div className="flex flex-wrap items-center gap-2 mb-0.5">
                                     <h1 className="text-2xl font-black text-white leading-tight" style={{ fontFamily: "'Playfair Display',serif" }}>
-                                        {user?.name || "Maya Chen"}
+                                        {user?.name || " "}
                                     </h1>
                                     <span className="text-xs font-bold bg-gradient-to-br from-indigo-500 to-purple-600 text-white px-2.5 py-0.5 rounded-full border border-amber-200">Blogger</span>
                                 </div>

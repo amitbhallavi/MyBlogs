@@ -28,8 +28,8 @@ MyBlogs is a clean and responsive blog application where users can create, publi
 Example:
 
 ```txt
-Frontend: https://your-blog-app.vercel.app
-Backend: https://your-blog-api.onrender.com
+Frontend: https://amitblogs.vercel.app/
+Backend: https://myblogs-backend-8ek6.onrender.com
 📌 About The Project
 
 MyBlogs is a full-stack MERN blog application built for users who want a simple, beautiful, and fast writing platform.

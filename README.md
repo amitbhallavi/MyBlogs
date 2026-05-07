@@ -38,59 +38,72 @@ Users can register, log in, create posts, explore blogs, read full articles, and
 
 The project is designed with a modern UI, clean architecture, Redux Toolkit for state management, and a production-ready backend API.
 
-✨ Features
-👤 Authentication
-User register
-User login
-Protected routes
-JWT-based authentication
-Persistent auth state
-📝 Blog Management
-Create blog posts
-View all blogs
-View single blog detail page
-Edit own blogs
-Delete own blogs
-Dashboard feed for user content
-🔍 Explore & Feed
-Explore latest blogs
-Read full blog posts
-Clean card-based UI
-Responsive layout
-🎨 UI / UX
-Modern clean interface
-Responsive design
-Toast notifications
-Smooth user experience
-Professional blog-style layout
-⚙️ Backend API
-REST APIs
-MongoDB database
-Mongoose models
-Express controllers/routes
-Error handling
-CORS setup for frontend deployment
-🛠️ Tech Stack
-Frontend
-React.js
-Redux Toolkit
-React Router
-Axios
-Vite
-Tailwind CSS / CSS
-Backend
-Node.js
-Express.js
-MongoDB
-Mongoose
-JWT
-bcrypt.js
-CORS
-dotenv
-Deployment
-Frontend: Vercel
-Backend: Render
-Database: MongoDB Atlas
+## ✨ Features
+
+### 👤 Authentication
+- User registration
+- User login
+- Protected routes
+- JWT-based authentication
+- Persistent authentication state
+
+### 📝 Blog Management
+- Create blog posts
+- View all blogs
+- View single blog detail page
+- Edit own blogs
+- Delete own blogs
+- Dashboard feed for user content
+
+### 🔍 Explore & Feed
+- Explore latest blogs
+- Read full blog posts
+- Clean card-based UI
+- Responsive layout
+
+### 🎨 UI / UX
+- Modern clean interface
+- Fully responsive design
+- Toast notifications
+- Smooth user experience
+- Professional blog-style layout
+
+### ⚙️ Backend API
+- REST APIs
+- MongoDB database
+- Mongoose models
+- Express controllers and routes
+- Error handling
+- CORS setup for frontend deployment
+
+---
+
+## 🛠️ Tech Stack
+
+### Frontend
+- React.js
+- Redux Toolkit
+- React Router
+- Axios
+- Vite
+- Tailwind CSS / CSS
+
+### Backend
+- Node.js
+- Express.js
+- MongoDB
+- Mongoose
+- JWT
+- bcrypt.js
+- CORS
+- dotenv
+
+### Deployment
+- Frontend: Vercel
+- Backend: Render
+- Database: MongoDB Atlas
+
+
 📂 Project Structure
 MyBlogs/
 │

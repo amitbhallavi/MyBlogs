@@ -7,8 +7,11 @@ const normalizeBaseURL = (value) => {
 
 const configuredBaseURL = normalizeBaseURL(import.meta.env.VITE_API_URL);
 const localApiTarget = normalizeBaseURL(import.meta.env.VITE_API_TARGET);
+const apiBaseURL = import.meta.env.DEV ? "" : configuredBaseURL;
 
-export const authRedirectBaseURL = configuredBaseURL || localApiTarget;
+export const authRedirectBaseURL = import.meta.env.DEV
+  ? localApiTarget
+  : configuredBaseURL;
 
 export const buildApiUrl = (path) => {
   const normalizedPath = path.startsWith("/") ? path : `/${path}`;
@@ -16,7 +19,7 @@ export const buildApiUrl = (path) => {
 };
 
 const api = axios.create({
-  baseURL: configuredBaseURL || undefined,
+  baseURL: apiBaseURL || undefined,
   headers: {
     "Content-Type": "application/json",
   },

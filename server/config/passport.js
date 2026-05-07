@@ -2,6 +2,7 @@ import passport from "passport";
 import { Strategy as GitHubStrategy } from "passport-github2";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import User from "../models/User.js";
+import { getOAuthProviderConfig } from "../utils/oauthConfig.js";
 
 const getServerUrl = () => {
   return (
@@ -12,11 +13,14 @@ const getServerUrl = () => {
 };
 
 const getCallbackUrl = (provider) => {
+  const config = getOAuthProviderConfig(provider);
+  if (config.callbackURL) return config.callbackURL;
+
   if (provider === "google") {
-    return process.env.GOOGLE_CALLBACK_URL || `${getServerUrl()}/api/auth/google/callback`;
+    return `${getServerUrl()}/api/auth/google/callback`;
   }
 
-  return process.env.GITHUB_CALLBACK_URL || `${getServerUrl()}/api/auth/github/callback`;
+  return `${getServerUrl()}/api/auth/github/callback`;
 };
 
 const normalizeEmail = (email) => String(email || "").trim().toLowerCase();
@@ -116,12 +120,15 @@ const findOrCreateOAuthUser = async (provider, profile, accessToken) => {
 };
 
 const configurePassport = () => {
-  if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+  const googleConfig = getOAuthProviderConfig("google");
+  const githubConfig = getOAuthProviderConfig("github");
+
+  if (googleConfig.clientID && googleConfig.clientSecret) {
     passport.use(
       new GoogleStrategy(
         {
-          clientID: process.env.GOOGLE_CLIENT_ID,
-          clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+          clientID: googleConfig.clientID,
+          clientSecret: googleConfig.clientSecret,
           callbackURL: getCallbackUrl("google"),
           state: true,
         },
@@ -137,12 +144,12 @@ const configurePassport = () => {
     );
   }
 
-  if (process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
+  if (githubConfig.clientID && githubConfig.clientSecret) {
     passport.use(
       new GitHubStrategy(
         {
-          clientID: process.env.GITHUB_CLIENT_ID,
-          clientSecret: process.env.GITHUB_CLIENT_SECRET,
+          clientID: githubConfig.clientID,
+          clientSecret: githubConfig.clientSecret,
           callbackURL: getCallbackUrl("github"),
           scope: ["user:email"],
           state: true,

@@ -3,9 +3,9 @@
 Use these values for local development in this project:
 
 - Frontend: `http://localhost:5173`
-- Backend: `http://localhost:5050`
-- Google callback: `http://localhost:5050/api/auth/google/callback`
-- GitHub callback: `http://localhost:5050/api/auth/github/callback`
+- Backend: `http://localhost:5051`
+- Google callback: `http://localhost:5051/api/auth/google/callback`
+- GitHub callback: `http://localhost:5051/api/auth/github/callback`
 
 If you change `server/.env PORT`, the callback URLs must change too.
 
@@ -17,10 +17,10 @@ Set these in `server/.env` locally and in Render environment variables:
 FRONTEND_URL=http://localhost:5173
 GOOGLE_CLIENT_ID=your-google-client-id
 GOOGLE_CLIENT_SECRET=your-google-client-secret
-GOOGLE_CALLBACK_URL=http://localhost:5050/api/auth/google/callback
+GOOGLE_CALLBACK_URL=http://localhost:5051/api/auth/google/callback
 GITHUB_CLIENT_ID=your-github-client-id
 GITHUB_CLIENT_SECRET=your-github-client-secret
-GITHUB_CALLBACK_URL=http://localhost:5050/api/auth/github/callback
+GITHUB_CALLBACK_URL=http://localhost:5051/api/auth/github/callback
 ```
 
 For Render production, use your real URLs:
@@ -36,7 +36,7 @@ GITHUB_CALLBACK_URL=https://your-render-backend.onrender.com/api/auth/github/cal
 Local `client/.env` should keep:
 
 ```env
-VITE_API_TARGET=http://localhost:5050
+VITE_API_TARGET=http://localhost:5051
 ```
 
 In Vercel, set:
@@ -59,7 +59,7 @@ Do not put OAuth client secrets in frontend env variables.
    - Local: `http://localhost:5173`
    - Production: `https://your-vercel-app.vercel.app`
 8. Add Authorized redirect URIs:
-   - Local: `http://localhost:5050/api/auth/google/callback`
+   - Local: `http://localhost:5051/api/auth/google/callback`
    - Production: `https://your-render-backend.onrender.com/api/auth/google/callback`
 9. Copy the Client ID and Client Secret to backend environment variables.
 
@@ -72,7 +72,7 @@ Do not put OAuth client secrets in frontend env variables.
    - Local testing: `http://localhost:5173`
    - Production: `https://your-vercel-app.vercel.app`
 5. Set Authorization callback URL:
-   - Local: `http://localhost:5050/api/auth/github/callback`
+   - Local: `http://localhost:5051/api/auth/github/callback`
    - Production: `https://your-render-backend.onrender.com/api/auth/github/callback`
 6. Copy the Client ID and Client Secret to backend environment variables.
 

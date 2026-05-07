@@ -8,6 +8,7 @@ import {
   updateCurrentUser,
 } from "../controllers/authController.js";
 import { protect } from "../middleware/authMiddleware.js";
+import { getOAuthProviderConfig, getOAuthStatus } from "../utils/oauthConfig.js";
 import { buildFrontendRedirect } from "../utils/urls.js";
 
 const router = express.Router();
@@ -17,9 +18,8 @@ const getFailureRedirect = (code = "oauth_failed") => {
 };
 
 const requireOAuthConfig = (provider) => (req, res, next) => {
-  const hasGoogleConfig = process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET;
-  const hasGitHubConfig = process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET;
-  const configured = provider === "google" ? hasGoogleConfig : hasGitHubConfig;
+  const config = getOAuthProviderConfig(provider);
+  const configured = config.clientID && config.clientSecret;
 
   if (!configured) {
     res.redirect(getFailureRedirect("oauth_not_configured"));
@@ -45,6 +45,9 @@ router.post("/register", registerUser);
 router.post("/login", loginUser);
 router.get("/me", protect, getCurrentUser);
 router.put("/me", protect, updateCurrentUser);
+router.get("/oauth/status", (req, res) => {
+  res.json(getOAuthStatus());
+});
 
 router.get(
   "/google",

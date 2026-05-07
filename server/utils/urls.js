@@ -5,6 +5,13 @@ const cleanUrl = (value) => {
   return url && !PLACEHOLDER_PATTERN.test(url) ? url : "";
 };
 
+const cleanUrlList = (value) => {
+  return String(value || "")
+    .split(",")
+    .map(cleanUrl)
+    .filter(Boolean);
+};
+
 const getFrontendUrl = () => {
   return (
     cleanUrl(process.env.FRONTEND_URL) ||
@@ -19,4 +26,4 @@ const buildFrontendRedirect = (path) => {
   return `${getFrontendUrl()}${normalizedPath}`;
 };
 
-export { buildFrontendRedirect, cleanUrl, getFrontendUrl };
+export { buildFrontendRedirect, cleanUrl, cleanUrlList, getFrontendUrl };

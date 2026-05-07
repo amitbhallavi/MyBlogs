@@ -8,7 +8,8 @@ import configurePassport from "./config/passport.js";
 import { errorHandler, notFound } from "./middleware/errorMiddleware.js";
 import authRoutes from "./routes/authRoutes.js";
 import blogRoutes from "./routes/blogRoutes.js";
-import { cleanUrl, getFrontendUrl } from "./utils/urls.js";
+import { getOAuthStatus } from "./utils/oauthConfig.js";
+import { cleanUrl, cleanUrlList, getFrontendUrl } from "./utils/urls.js";
 import "colors";
 
 dotenv.config();
@@ -27,10 +28,19 @@ const allowedOrigins = [
   cleanUrl(process.env.LOCAL_CLIENT_URL) || "http://localhost:5173",
   "http://127.0.0.1:5173",
   "http://localhost:5174",
+  ...cleanUrlList(process.env.CLIENT_URLS),
 ].filter(Boolean);
 
 configurePassport();
 app.set("trust proxy", 1);
+
+const oauthStatus = getOAuthStatus();
+if (!oauthStatus.google.configured) {
+  console.warn(`Google OAuth not configured. Missing: ${oauthStatus.google.missing.join(", ")}`);
+}
+if (!oauthStatus.github.configured) {
+  console.warn(`GitHub OAuth not configured. Missing: ${oauthStatus.github.missing.join(", ")}`);
+}
 
 app.use(
   cors({

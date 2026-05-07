@@ -122,6 +122,7 @@ const RegisterPage = () => {
                             <label className="block text-sm font-semibold text-gray-700 mb-1.5">Full Name</label>
                             <input
                                 name='name'
+                                autoComplete="name"
                                 value={name}
                                 onChange={handleChange}
                                 placeholder="Aryan Mehta "
@@ -134,6 +135,8 @@ const RegisterPage = () => {
                             <label className="block text-sm font-semibold text-gray-700 mb-1.5">Email address</label>
                             <input
                                 name='email'
+                                type="email"
+                                autoComplete="email"
                                 value={email}
                                 onChange={handleChange}
                                 placeholder="you@example.com"
@@ -148,6 +151,7 @@ const RegisterPage = () => {
                                 <input
                                     type='password'
                                     name='password'
+                                    autoComplete="new-password"
                                     value={password}
                                     onChange={handleChange}
                                     placeholder="Min. 6 characters"
@@ -165,6 +169,7 @@ const RegisterPage = () => {
                             <input
                                 type="password"
                                 name='confirmPassword'
+                                autoComplete="new-password"
                                 value={confirmPassword}
                                 onChange={handleChange}
                                 placeholder="Re-enter your password"

@@ -36,11 +36,23 @@ const getCurrentUser = async (token) => {
     return user
 }
 
+const updateCurrentUser = async (formData, token) => {
+    const response = await api.put("/api/auth/me", formData, {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    })
+
+    const user = { ...response.data, token: response.data.token || token }
+    localStorage.setItem('user', JSON.stringify(user))
+    return user
+}
+
 const getOAuthRedirectUrl = (provider) => {
     return buildApiUrl(`/api/auth/${provider}`)
 }
 
-const authService = { register , login, getCurrentUser, getOAuthRedirectUrl  }
+const authService = { register , login, getCurrentUser, updateCurrentUser, getOAuthRedirectUrl  }
 
 
 export default authService;

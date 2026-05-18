@@ -1,226 +1,212 @@
-// ── Create Blog Post Page ──────────────────────────────────────────────────────────────
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { toast } from "react-toastify";
+import { createBlog, getBlogs } from "../components/features/blogs/blogSlice";
 
-import React, { useState } from 'react'
-import { useDispatch, useSelector } from 'react-redux';
-import { createBlog, getBlogs } from '../components/features/blogs/blogSlice';
+const initialFormData = {
+    title: "",
+    description: "",
+    image: "",
+    category: "",
+    tags: "",
+};
+
+const getReadTime = (text) => {
+    const wordCount = text.trim().split(/\s+/).filter(Boolean).length;
+    return `${Math.max(1, Math.ceil(wordCount / 200))} min read`;
+};
 
 const CreatePost = () => {
-
     const dispatch = useDispatch();
+    const navigate = useNavigate();
     const { blogLoading, blogError, blogErrorMessage } = useSelector((state) => state.blog);
-    const { user } = useSelector((state) => state.auth)
-    // Form state for creating blog
+    const { user } = useSelector((state) => state.auth);
+    const [formData, setFormData] = useState(initialFormData);
 
-    const [formData, setFormData] = useState({
-        title: '',
-        content: '',
-        description: '',
-    });
-    const { title, description } = formData
+    const wordCount = formData.description.trim().split(/\s+/).filter(Boolean).length;
+    const canPublish = Boolean(formData.title.trim() && formData.description.trim() && user);
 
-    const [showSuccess, setShowSuccess] = useState(false);
-    const [showError, setShowError] = useState(false);
-
-
-
-    // Handle input change
-    const handleInputChange = (e) => {
-        const { name, value } = e.target;
-        setFormData((prev) => ({
-            ...prev,
-            [name]: value,
-        }));
+    const handleInputChange = (event) => {
+        const { name, value } = event.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
     };
 
-    // Handle form submission to create blog
-    const handleCreateBlog = async (e) => {
-        e.preventDefault();
+    const handleCreateBlog = async (event) => {
+        event.preventDefault();
 
-        if (!title || !description) {
-            alert('Please fill in all fields');
+        if (!user) {
+            toast.error("Login is required to publish");
             return;
         }
 
-        // Prepare blog data with user information
+        if (!formData.title.trim() || !formData.description.trim()) {
+            toast.error("Title and content are required");
+            return;
+        }
+
         const blogData = {
-            title,
-            content: description,
-            description,
-            author: user?.name || user?.username || 'Anonymous',
-            authorId: user?._id,  // Include user ID for proper tracking
-            userId: user?._id,    // Backend compatibility
+            title: formData.title.trim(),
+            content: formData.description.trim(),
+            description: formData.description.trim(),
+            image: formData.image.trim(),
+            category: formData.category.trim(),
+            tags: formData.tags,
+            readTime: getReadTime(formData.description),
         };
 
-        // Dispatch createBlog action
-        const result = await dispatch(createBlog(blogData));
-
-        if (result.payload) {
-            setShowSuccess(true);
-            // Reset form after successful submission
-            setFormData({
-                title: '',
-                content: '',
-                description: '',
-            });
-            // Re-fetch all blogs to show new blog in profile
-            setTimeout(() => {
-                dispatch(getBlogs());
-                setShowSuccess(false);
-            }, 1500);
-        } else {
-            setShowError(true);
-            setTimeout(() => setShowError(false), 3000);
+        try {
+            const createdBlog = await dispatch(createBlog(blogData)).unwrap();
+            toast.success("Post published");
+            setFormData(initialFormData);
+            dispatch(getBlogs());
+            navigate(`/singleProfile/${createdBlog._id}`);
+        } catch (error) {
+            toast.error(typeof error === "string" ? error : "Failed to publish post");
         }
     };
 
-
-
     return (
+        <main className="min-h-screen bg-[#fbfaf5] text-[#111315]">
+            <style>{`
+                @import url('https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=Fraunces:opsz,wght@9..144,700;9..144,900&display=swap');
+                .write-shell{font-family:'Archivo',sans-serif}
+                .write-display{font-family:'Fraunces',serif}
+                .write-grid{background-image:linear-gradient(rgba(17,19,21,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(17,19,21,.06) 1px,transparent 1px);background-size:34px 34px}
+            `}</style>
 
-        <div className="max-w-4xl mx-auto px-4 py-8">
+            <section className="write-shell write-grid px-4 py-8 sm:px-6 lg:px-8">
+                <div className="mx-auto grid max-w-7xl gap-5 lg:grid-cols-[minmax(0,1fr)_360px]">
+                    <form onSubmit={handleCreateBlog} className="rounded-[2rem] border border-[#111315] bg-white p-5 shadow-[9px_9px_0_#f6cf4f] sm:p-7">
+                        <div className="border-b border-zinc-100 pb-5">
+                            <p className="text-xs font-black uppercase tracking-[0.24em] text-[#263bff]">Writer studio</p>
+                            <h1 className="write-display mt-3 max-w-4xl text-6xl leading-[0.9] tracking-normal sm:text-8xl">
+                                Draft, preview, publish.
+                            </h1>
+                        </div>
 
+                        {!user && (
+                            <div className="mt-5 rounded-3xl border border-[#f45d48]/30 bg-[#fff3ef] p-5">
+                                <p className="text-sm font-black text-[#f45d48]">Login required.</p>
+                                <p className="mt-1 text-sm font-semibold leading-6 text-zinc-600">
+                                    The backend protects publishing. Sign in before creating a post.
+                                </p>
+                                <Link to="/login" className="mt-4 inline-flex rounded-full bg-[#111315] px-5 py-3 text-xs font-black uppercase tracking-[0.16em] text-white">
+                                    Sign in
+                                </Link>
+                            </div>
+                        )}
 
-
-            {/* Success Message */}
-            {showSuccess && (
-                <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg mb-6">
-                    ✅ Blog post created successfully!
-                </div>
-            )}
-
-            {/* Error Message */}
-            {(showError || blogError) && (
-                <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mb-6">
-                    ❌ Error: {blogErrorMessage || 'Failed to create blog post'}
-                </div>
-            )}
-
-
-            {!user ? (
-
-                <div className="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl p-6 md:p-8 text-white mb-6">
-                    <h1 className="text-3xl font-black mb-2">✍️ Create a Account , You Need to be Logged In</h1>
-                    <p className="text-indigo-200"> login required! </p>
-                </div>
-
-            ) : (
-                <>
-
-                    {/* Page Header */}
-
-                    <div className="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl p-6 md:p-8 text-white mb-6">
-                        <h1 className="text-3xl font-black mb-2">✍️ Create a New Blog Post</h1>
-                        <p className="text-indigo-200">Share your thoughts and ideas with the world - No login required!</p>
-                    </div>
-                    {/* Blog Creation Form */}
-
-                    <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-200">
-                        <form onSubmit={handleCreateBlog}>
-                            {/* Blog Title */}
-                            <div className="mb-6">
-                                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                    Blog Title *
-                                </label>
+                        <div className="mt-6 space-y-5">
+                            <div>
+                                <label className="mb-2 block text-xs font-black uppercase tracking-[0.18em] text-zinc-500">Title</label>
                                 <input
                                     type="text"
                                     name="title"
-                                    value={title}
+                                    value={formData.title}
                                     onChange={handleInputChange}
-                                    placeholder="Enter an engaging title for your blog..."
-                                    className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm text-gray-800 placeholder-gray-400 outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
-                                    required
+                                    placeholder="Write a title that earns the click"
+                                    className="w-full rounded-3xl border border-zinc-200 bg-[#fbfaf5] px-5 py-4 text-xl font-black outline-none transition focus:border-[#111315] focus:bg-white"
+                                    disabled={!user}
                                 />
                             </div>
 
-                            {/* Author Info - Auto-filled */}
-                            <div className="mb-6 p-4 bg-indigo-50 border border-indigo-200 rounded-xl">
-                                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                    👤 Author
-                                </label>
-                                <p className="text-sm text-gray-800 font-semibold">{user?.name || user?.username || 'Anonymous'}</p>
-                                <p className="text-xs text-gray-500 mt-1">Auto-filled from your profile</p>
+                            <div className="grid gap-4 sm:grid-cols-2">
+                                <div>
+                                    <label className="mb-2 block text-xs font-black uppercase tracking-[0.18em] text-zinc-500">Category</label>
+                                    <input
+                                        name="category"
+                                        value={formData.category}
+                                        onChange={handleInputChange}
+                                        placeholder="Tech, Life, Travel"
+                                        className="w-full rounded-2xl border border-zinc-200 bg-[#fbfaf5] px-4 py-3 text-sm font-bold outline-none transition focus:border-[#111315] focus:bg-white"
+                                        disabled={!user}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="mb-2 block text-xs font-black uppercase tracking-[0.18em] text-zinc-500">Tags</label>
+                                    <input
+                                        name="tags"
+                                        value={formData.tags}
+                                        onChange={handleInputChange}
+                                        placeholder="comma, separated, tags"
+                                        className="w-full rounded-2xl border border-zinc-200 bg-[#fbfaf5] px-4 py-3 text-sm font-bold outline-none transition focus:border-[#111315] focus:bg-white"
+                                        disabled={!user}
+                                    />
+                                </div>
                             </div>
 
-                            {/* Blog Description */}
-                            <div className="mb-6">
-                                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                    Blog Content *
-                                </label>
+                            <div>
+                                <label className="mb-2 block text-xs font-black uppercase tracking-[0.18em] text-zinc-500">Featured image URL</label>
+                                <input
+                                    name="image"
+                                    value={formData.image}
+                                    onChange={handleInputChange}
+                                    placeholder="https://..."
+                                    className="w-full rounded-2xl border border-zinc-200 bg-[#fbfaf5] px-4 py-3 text-sm font-bold outline-none transition focus:border-[#111315] focus:bg-white"
+                                    disabled={!user}
+                                />
+                            </div>
+
+                            <div>
+                                <label className="mb-2 block text-xs font-black uppercase tracking-[0.18em] text-zinc-500">Post body</label>
                                 <textarea
                                     name="description"
-                                    value={description}
+                                    value={formData.description}
                                     onChange={handleInputChange}
-                                    placeholder="Write your blog content here... Be creative!"
-                                    rows="10"
-                                    className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm text-gray-800 placeholder-gray-400 outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition resize-none"
-                                    required
+                                    placeholder="Write the full post here..."
+                                    rows={14}
+                                    className="w-full resize-none rounded-3xl border border-zinc-200 bg-[#fbfaf5] px-5 py-4 text-base font-semibold leading-7 outline-none transition focus:border-[#111315] focus:bg-white"
+                                    disabled={!user}
                                 />
                             </div>
+                        </div>
 
-                            {/* Submit Button */}
-                            <div className="flex gap-4">
-                                <button
-                                    type="submit"
-                                    disabled={blogLoading}
-                                    className="flex-1 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-70 disabled:cursor-not-allowed text-white font-bold py-3.5 rounded-xl transition-colors flex items-center justify-center cursor-pointer"
-                                >
-
-                                    🚀 Publish Blog Post
-
-                                </button>
-
-                                <button
-                                    type="reset"
-                                    className="px-8 bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-3.5 rounded-xl transition-colors cursor-pointer"
-                                    onClick={() => setFormData({ title: '', content: '', description: '' })}
-                                >
-                                    Clear
-                                </button>
+                        {(blogError || blogErrorMessage) && (
+                            <div className="mt-5 rounded-2xl bg-red-50 px-4 py-3 text-sm font-bold text-red-700">
+                                {blogErrorMessage || "Failed to publish post"}
                             </div>
+                        )}
 
-                        </form>
-                    </div>
+                        <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+                            <button type="submit" disabled={!canPublish || blogLoading} className="flex-1 rounded-full bg-[#111315] py-4 text-sm font-black uppercase tracking-[0.16em] text-white transition hover:bg-[#263bff] disabled:cursor-not-allowed disabled:opacity-60">
+                                {blogLoading ? "Publishing" : "Publish post"}
+                            </button>
+                            <button type="button" onClick={() => setFormData(initialFormData)} className="rounded-full border border-zinc-300 px-8 py-4 text-sm font-black uppercase tracking-[0.16em] transition hover:border-[#111315]">
+                                Clear
+                            </button>
+                        </div>
+                    </form>
 
+                    <aside className="space-y-5">
+                        <div className="rounded-[2rem] border border-[#111315] bg-[#111315] p-5 text-white shadow-[7px_7px_0_#1ccad8]">
+                            <p className="text-xs font-black uppercase tracking-[0.22em] text-[#f6cf4f]">Status</p>
+                            <h2 className="write-display mt-2 text-5xl leading-none tracking-normal">Ready check</h2>
+                            <div className="mt-5 space-y-3 text-sm font-bold text-white/70">
+                                <p>{user ? `Author: ${user.name}` : "Author: not signed in"}</p>
+                                <p>Words: {wordCount}</p>
+                                <p>Read time: {getReadTime(formData.description)}</p>
+                                <p>Required: title and body</p>
+                            </div>
+                        </div>
 
-
-
-
-
-
-                </>
-            )
-
-
-
-            }
-
-
-
-
-            {/* Info Section */}
-            <div className="mt-8 bg-blue-50 border border-blue-200 rounded-2xl p-6">
-                <h3 className="text-lg font-bold text-blue-900 mb-3">📝 Tips for a Great Blog Post:</h3>
-                <ul className="text-blue-800 space-y-2">
-                    <li>✓ Use a clear, descriptive title</li>
-                    <li>✓ Write engaging content that captures attention</li>
-                    <li>✓ Use your real name or a memorable pseudonym</li>
-                    <li>✓ Share your authentic thoughts and experiences</li>
-                    <li>✓ No login required - Everyone can publish!</li>
-                </ul>
-            </div>
-
-
-
-
-
-
-
-
-
-
-        </div>
+                        <div className="rounded-[2rem] border border-zinc-200 bg-white p-5 shadow-sm">
+                            <p className="text-xs font-black uppercase tracking-[0.22em] text-[#f45d48]">Live preview</p>
+                            {formData.image ? (
+                                <img src={formData.image} alt="Preview" className="mt-4 h-44 w-full rounded-2xl object-cover" onError={event => { event.currentTarget.style.display = "none"; }} />
+                            ) : (
+                                <div className="mt-4 h-44 rounded-2xl bg-[linear-gradient(135deg,#f6cf4f,#fbfaf5_50%,#263bff)]" />
+                            )}
+                            <h3 className="mt-4 line-clamp-2 text-2xl font-black leading-tight">{formData.title || "Post title preview"}</h3>
+                            <p className="mt-3 line-clamp-3 text-sm font-semibold leading-6 text-zinc-500">
+                                {formData.description || "Your post preview will appear here as you write."}
+                            </p>
+                        </div>
+                    </aside>
+                </div>
+            </section>
+        </main>
     );
+};
 
-}
-
-export default CreatePost
+export default CreatePost;

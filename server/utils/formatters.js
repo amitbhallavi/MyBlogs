@@ -4,8 +4,8 @@ const getAuthorId = (author) => {
 };
 
 const getAuthorName = (blog) => {
-  if (blog.authorName) return blog.authorName;
   if (blog.author && blog.author.name) return blog.author.name;
+  if (blog.authorName) return blog.authorName;
   return "Anonymous";
 };
 

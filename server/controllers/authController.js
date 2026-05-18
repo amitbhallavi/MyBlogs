@@ -1,4 +1,5 @@
 import asyncHandler from "../middleware/asyncHandler.js";
+import Blog from "../models/Blog.js";
 import User from "../models/User.js";
 import { formatUser } from "../utils/formatters.js";
 import generateToken from "../utils/token.js";
@@ -71,20 +72,49 @@ const updateCurrentUser = asyncHandler(async (req, res) => {
     throw new Error("User not found");
   }
 
-  user.name = req.body.name ?? user.name;
-  user.email = req.body.email ?? user.email;
-  user.profilePic = req.body.profilePic ?? user.profilePic;
-  user.profileImage = req.body.profileImage ?? user.profileImage;
-  user.avatar = req.body.avatar ?? user.avatar;
-  user.bio = req.body.bio ?? user.bio;
-  user.gender = req.body.gender ?? user.gender;
-  user.location = req.body.location ?? user.location;
+  const previousName = user.name;
+
+  if (req.body.name !== undefined) {
+    const nextName = String(req.body.name).trim();
+    if (!nextName) {
+      res.status(400);
+      throw new Error("Name is required");
+    }
+    user.name = nextName;
+  }
+
+  if (req.body.email !== undefined) {
+    const nextEmail = String(req.body.email).trim().toLowerCase();
+    if (!nextEmail) {
+      res.status(400);
+      throw new Error("Email is required");
+    }
+
+    const emailOwner = await User.findOne({ email: nextEmail, _id: { $ne: user._id } });
+    if (emailOwner) {
+      res.status(400);
+      throw new Error("Email is already in use");
+    }
+
+    user.email = nextEmail;
+  }
+
+  user.profilePic = req.body.profilePic !== undefined ? String(req.body.profilePic).trim() : user.profilePic;
+  user.profileImage = req.body.profileImage !== undefined ? String(req.body.profileImage).trim() : user.profileImage;
+  user.avatar = req.body.avatar !== undefined ? String(req.body.avatar).trim() : user.avatar;
+  user.bio = req.body.bio !== undefined ? String(req.body.bio).trim() : user.bio;
+  user.gender = req.body.gender !== undefined ? String(req.body.gender).trim() : user.gender;
+  user.location = req.body.location !== undefined ? String(req.body.location).trim() : user.location;
 
   if (req.body.password) {
     user.password = req.body.password;
   }
 
   const updatedUser = await user.save();
+  if (previousName !== updatedUser.name) {
+    await Blog.updateMany({ author: updatedUser._id }, { authorName: updatedUser.name });
+  }
+
   res.json(formatUser(updatedUser, generateToken(updatedUser._id)));
 });
 

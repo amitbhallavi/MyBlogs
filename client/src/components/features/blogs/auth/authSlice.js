@@ -47,6 +47,34 @@ export const loadOAuthUser = createAsyncThunk("AUTH/OAUTH_SUCCESS", async (token
     }
 })
 
+// Refresh current user ->
+export const fetchCurrentUser = createAsyncThunk("AUTH/FETCH_CURRENT_USER", async (_, thunkAPI) => {
+    try {
+        const token = thunkAPI.getState().auth.user?.token
+        if (!token) {
+            throw new Error("Please login again.")
+        }
+
+        return await authService.getCurrentUser(token)
+    } catch (error) {
+        return thunkAPI.rejectWithValue(getErrorMessage(error))
+    }
+})
+
+// Update current user ->
+export const updateCurrentUser = createAsyncThunk("AUTH/UPDATE_CURRENT_USER", async (formData, thunkAPI) => {
+    try {
+        const token = thunkAPI.getState().auth.user?.token
+        if (!token) {
+            throw new Error("Please login again.")
+        }
+
+        return await authService.updateCurrentUser(formData, token)
+    } catch (error) {
+        return thunkAPI.rejectWithValue(getErrorMessage(error, "Failed to update profile."))
+    }
+})
+
 // Logout user ->
 export const logoutUser = createAsyncThunk("AUTH/LOGOUT", async () => {
     localStorage.removeItem('user')
@@ -98,6 +126,12 @@ const authSlice = createSlice({
             .addCase(loadOAuthUser.pending, setPending)
             .addCase(loadOAuthUser.fulfilled, setFulfilled)
             .addCase(loadOAuthUser.rejected, setRejected)
+            .addCase(fetchCurrentUser.pending, setPending)
+            .addCase(fetchCurrentUser.fulfilled, setFulfilled)
+            .addCase(fetchCurrentUser.rejected, setRejected)
+            .addCase(updateCurrentUser.pending, setPending)
+            .addCase(updateCurrentUser.fulfilled, setFulfilled)
+            .addCase(updateCurrentUser.rejected, setRejected)
             .addCase(logoutUser.fulfilled, (state) => {
                 state.isError = false
                 state.isSuccess = false

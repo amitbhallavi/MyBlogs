@@ -1,182 +1,166 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { logoutUser } from "./features/blogs/auth/authSlice";
 
-const Navbar = ({ setPage: _setPage, searchQuery, setSearchQuery }) => {
+const navItems = [
+    { label: "Feed", path: "/" },
+    { label: "Explore", path: "/explore" },
+];
+
+const getProfileImage = (user) => {
+    const image = user?.profileImage || user?.profilePic || user?.avatar;
+    const fallbackName = encodeURIComponent(user?.name || user?.email || "User");
+    return image || `https://ui-avatars.com/api/?name=${fallbackName}&background=111315&color=fff&size=96`;
+};
+
+const Navbar = ({ theme = "light", onToggleTheme }) => {
     const { user } = useSelector(state => state.auth);
     const dispatch = useDispatch();
+    const navigate = useNavigate();
+    const location = useLocation();
     const [menuOpen, setMenuOpen] = useState(false);
-    const [searchOpen, setSearchOpen] = useState(false);
 
     const handleLogout = () => {
         dispatch(logoutUser());
+        setMenuOpen(false);
+        navigate("/");
+    };
+
+    const isActive = (path) => {
+        if (path === "/") return location.pathname === "/";
+        return location.pathname.startsWith(path);
     };
 
     return (
-        <nav className="sticky top-0 z-50 bg-white border-b border-gray-100 shadow-sm">
+        <header className="sticky top-0 z-50 border-b border-black/10 bg-[#fbfaf5]/92 backdrop-blur-xl">
+            <style>{`
+                @import url('https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800;900&family=Fraunces:opsz,wght@9..144,700;9..144,900&display=swap');
+                .nav-shell{font-family:'Archivo',sans-serif}
+                .nav-display{font-family:'Fraunces',serif}
+            `}</style>
 
-            {/* relative wrapper — needed for absolute center links */}
-            <div className="relative max-w-6xl mx-auto px-4 h-16 sm:h-20 flex items-center justify-between">
-
-                {/* Logo — left, never shrinks */}
-                <Link to={"/"} className="flex-shrink-0 z-10">
-                    <div className="flex items-center gap-2">
-                        <div className="w-10 h-9 sm:w-12 sm:h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center">
-                            <span className="text-white font-black text-xs sm:text-sm">M-bg</span>
-                        </div>
-                        <span className="font-black text-lg sm:text-xl tracking-tight text-gray-900">MyBlogs</span>
-                    </div>
+            <nav className="nav-shell mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:h-18 sm:px-6 lg:px-8">
+                <Link to="/" className="flex items-center gap-3">
+                    <span className="grid h-11 w-11 place-items-center rounded-2xl border border-[#111315] bg-[#111315] text-sm font-black text-[#f6cf4f] shadow-[4px_4px_0_#f45d48]">
+                        MB
+                    </span>
+                    <span className="nav-display text-2xl leading-none tracking-normal text-[#111315]">MyBlogs</span>
                 </Link>
 
-                {/* ✅ Desktop Nav Links — ABSOLUTE CENTER, never moves */}
-                <div className="hidden md:flex absolute left-1/2 -translate-x-1/2 items-center gap-1">
-                    <Link to={"/"}>
-                        <button className="px-4 py-2 cursor-pointer text-sm text-gray-500 hover:text-gray-900 hover:bg-gray-50 rounded-xl transition-colors">
-                            Feed
-                        </button>
-                    </Link>
-                    <Link to={"/explore"}>
-                        <button className="px-4 py-2 text-sm cursor-pointer text-gray-500 hover:text-gray-900 hover:bg-gray-50 rounded-xl transition-colors">
-                            Explore
-                        </button>
-                    </Link>
+                <div className="hidden items-center gap-1 rounded-full border border-black/10 bg-white p-1 md:flex">
+                    {navItems.map((item) => (
+                        <Link
+                            key={item.path}
+                            to={item.path}
+                            className={`rounded-full px-4 py-2 text-sm font-black transition ${isActive(item.path) ? "bg-[#111315] text-white" : "text-zinc-500 hover:text-[#111315]"}`}
+                        >
+                            {item.label}
+                        </Link>
+                    ))}
                     {user && (
-                        <Link to={"/UserProfilePage"}>
-                            <p className="font-semibold text-red-500 hover:text-red-700 px-2 text-sm">
-                                Welcome! {user.name}
-                            </p>
+                        <Link
+                            to="/UserProfilePage"
+                            className={`rounded-full px-4 py-2 text-sm font-black transition ${isActive("/UserProfilePage") ? "bg-[#263bff] text-white" : "text-zinc-500 hover:text-[#111315]"}`}
+                        >
+                            Profile
                         </Link>
                     )}
                 </div>
 
-                {/* Right Side — z-10 so it stays above */}
-                <div className="flex items-center gap-2 flex-shrink-0 z-10">
+                <div className="hidden items-center gap-3 md:flex">
+                    <button
+                        type="button"
+                        onClick={onToggleTheme}
+                        className="group flex items-center gap-2 rounded-full border border-black/10 bg-white px-2 py-1.5 text-sm font-black text-[#111315] transition hover:border-[#111315] dark-theme-aware"
+                        aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} theme`}
+                    >
+                        <span className="grid h-8 w-8 place-items-center rounded-full bg-[#111315] text-xs text-white">
+                            {theme === "dark" ? "LT" : "DK"}
+                        </span>
+                        <span className="pr-2">{theme === "dark" ? "Light" : "Dark"}</span>
+                    </button>
 
-                    {/* Search */}
-                    <div className="flex items-center">
-                        {searchOpen ? (
-                            <div className="flex items-center gap-2 bg-gray-100 rounded-xl px-3 py-2 w-44 sm:w-56 transition-all duration-200">
-                                <svg className="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
-                                </svg>
-                                <input
-                                    autoFocus
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                    placeholder="Search posts…"
-                                    className="bg-transparent text-sm outline-none flex-1 min-w-0 text-gray-800 placeholder-gray-400"
-                                />
-                                <button
-                                    onClick={() => { setSearchOpen(false); setSearchQuery(""); }}
-                                    className="cursor-pointer text-gray-400 hover:text-gray-600 flex-shrink-0 text-xs font-bold"
-                                >
-                                    ✕
-                                </button>
-                            </div>
-                        ) : (
-                            <button
-                                onClick={() => setSearchOpen(true)}
-                                className="p-2 cursor-pointer rounded-xl hover:bg-gray-100 text-gray-500 transition-colors"
-                            >
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
-                                </svg>
+                    {user ? (
+                        <>
+                            <Link to="/createPost" className="rounded-full bg-[#f6cf4f] px-5 py-2.5 text-sm font-black text-[#111315] transition hover:bg-[#1ccad8]">
+                                Write
+                            </Link>
+                            <Link to="/UserProfilePage" className="flex items-center gap-2 rounded-full border border-black/10 bg-white px-2 py-1.5 pr-4">
+                                <img src={getProfileImage(user)} alt={user.name || "Profile"} className="h-8 w-8 rounded-full object-cover" />
+                                <span className="max-w-[120px] truncate text-sm font-black text-[#111315]">{user.name}</span>
+                            </Link>
+                            <button type="button" onClick={handleLogout} className="rounded-full border border-black/10 px-4 py-2.5 text-sm font-black text-zinc-500 transition hover:border-[#f45d48] hover:text-[#f45d48]">
+                                Sign out
                             </button>
+                        </>
+                    ) : (
+                        <>
+                            <Link to="/login" className="rounded-full px-4 py-2.5 text-sm font-black text-zinc-600 transition hover:text-[#111315]">
+                                Sign in
+                            </Link>
+                            <Link to="/register" className="rounded-full bg-[#111315] px-5 py-2.5 text-sm font-black text-white shadow-[4px_4px_0_#1ccad8] transition hover:bg-[#263bff]">
+                                Start
+                            </Link>
+                        </>
+                    )}
+                </div>
+
+                <button
+                    type="button"
+                    onClick={() => setMenuOpen(open => !open)}
+                    className="rounded-full border border-black/10 bg-white px-4 py-2 text-sm font-black text-[#111315] md:hidden"
+                    aria-expanded={menuOpen}
+                >
+                    {menuOpen ? "Close" : "Menu"}
+                </button>
+            </nav>
+
+            {menuOpen && (
+                <div className="nav-shell border-t border-black/10 bg-[#fbfaf5] px-4 py-4 md:hidden">
+                    <div className="mx-auto flex max-w-7xl flex-col gap-2">
+                        {[...navItems, ...(user ? [{ label: "Profile", path: "/UserProfilePage" }] : [])].map((item) => (
+                            <Link
+                                key={item.path}
+                                to={item.path}
+                                onClick={() => setMenuOpen(false)}
+                                className={`rounded-2xl px-4 py-3 text-sm font-black ${isActive(item.path) ? "bg-[#111315] text-white" : "bg-white text-zinc-600"}`}
+                            >
+                                {item.label}
+                            </Link>
+                        ))}
+
+                        <button
+                            type="button"
+                            onClick={onToggleTheme}
+                            className="rounded-2xl border border-black/10 bg-white px-4 py-3 text-left text-sm font-black text-[#111315]"
+                        >
+                            Switch to {theme === "dark" ? "light" : "dark"} theme
+                        </button>
+
+                        {user ? (
+                            <>
+                                <Link to="/createPost" onClick={() => setMenuOpen(false)} className="rounded-2xl bg-[#f6cf4f] px-4 py-3 text-sm font-black text-[#111315]">
+                                    Write new post
+                                </Link>
+                                <button type="button" onClick={handleLogout} className="rounded-2xl bg-[#f45d48] px-4 py-3 text-left text-sm font-black text-white">
+                                    Sign out
+                                </button>
+                            </>
+                        ) : (
+                            <div className="grid grid-cols-2 gap-2">
+                                <Link to="/login" onClick={() => setMenuOpen(false)} className="rounded-2xl bg-white px-4 py-3 text-center text-sm font-black text-[#111315]">
+                                    Sign in
+                                </Link>
+                                <Link to="/register" onClick={() => setMenuOpen(false)} className="rounded-2xl bg-[#111315] px-4 py-3 text-center text-sm font-black text-white">
+                                    Start
+                                </Link>
+                            </div>
                         )}
                     </div>
-
-                    {/* Auth Buttons */}
-                    {user ? (
-                        <div className="hidden md:flex items-center gap-2 flex-shrink-0">
-                            <Link to={"/createPost"}>
-                                <button className="flex items-center gap-1 cursor-pointer bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors whitespace-nowrap">
-                                    <span className="text-base leading-none">+</span> New Blog
-                                </button>
-                            </Link>
-                            <button
-                                onClick={handleLogout}
-                                className="text-sm text-white cursor-pointer rounded-xl bg-red-700 px-4 py-2 font-semibold hover:bg-red-900 transition-colors whitespace-nowrap"
-                            >
-                                Sign out
-                            </button>
-                        </div>
-                    ) : (
-                        <div className="hidden md:flex items-center gap-2 flex-shrink-0">
-                            <Link to={"/login"}>
-                                <button className="cursor-pointer text-sm font-semibold text-gray-600 hover:text-indigo-600 px-4 py-2 rounded-xl hover:bg-indigo-50 transition-colors whitespace-nowrap">
-                                    Sign In
-                                </button>
-                            </Link>
-                            <Link to={"/register"}>
-                                <button className="cursor-pointer bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors whitespace-nowrap">
-                                    Get Started
-                                </button>
-                            </Link>
-                        </div>
-                    )}
-
-                    {/* Mobile Hamburger */}
-                    <button
-                        onClick={() => setMenuOpen(!menuOpen)}
-                        className="md:hidden p-2 rounded-xl hover:bg-gray-100 text-gray-500 flex-shrink-0"
-                    >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={menuOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"} />
-                        </svg>
-                    </button>
-                </div>
-            </div>
-
-            {/* Mobile Menu */}
-            {menuOpen && (
-                <div className="md:hidden border-t border-gray-100 bg-white px-4 py-3 flex flex-col gap-2">
-                    <Link to={"/"} onClick={() => setMenuOpen(false)}>
-                        <button className="w-full text-left px-4 py-2.5 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50">
-                            Feed
-                        </button>
-                    </Link>
-                    <Link to={"/explore"} onClick={() => setMenuOpen(false)}>
-                        <button className="w-full text-left px-4 py-2.5 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50">
-                            Explore
-                        </button>
-                    </Link>
-                    {user ? (
-                        <>
-                            <Link to={"/UserProfilePage"} onClick={() => setMenuOpen(false)}>
-                                <p className="px-4 py-2.5 font-semibold text-red-500 hover:text-red-700 text-sm">
-                                    Welcome! {user.name}
-                                </p>
-                            </Link>
-                            <Link to={"/createPost"} onClick={() => setMenuOpen(false)}>
-                                <button className="w-full flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors">
-                                    <span className="text-base leading-none">+</span> New Blog
-                                </button>
-                            </Link>
-                            <button
-                                onClick={() => { handleLogout(); setMenuOpen(false); }}
-                                className="w-full text-sm text-white cursor-pointer rounded-xl bg-red-700 px-4 py-2.5 font-semibold hover:bg-red-900 transition-colors"
-                            >
-                                Sign out
-                            </button>
-                        </>
-                    ) : (
-                        <>
-                            <Link to={"/login"} onClick={() => setMenuOpen(false)}>
-                                <button className="w-full cursor-pointer text-left px-4 py-2.5 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50">
-                                    Sign In
-                                </button>
-                            </Link>
-                            <Link to={"/register"} onClick={() => setMenuOpen(false)}>
-                                <button className="w-full cursor-pointer bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2.5 rounded-xl text-center mt-1 transition-colors">
-                                    Get Started
-                                </button>
-                            </Link>
-                        </>
-                    )}
                 </div>
             )}
-        </nav>
+        </header>
     );
 };
 

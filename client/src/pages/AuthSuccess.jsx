@@ -43,7 +43,18 @@ const AuthSuccess = () => {
       });
   }, [dispatch, location.search, navigate]);
 
-  return <LoaderTwo />;
+  return (
+    <main className="min-h-screen bg-[#f7f3ea] px-4 py-10">
+      <div className="mx-auto flex min-h-[calc(100vh-5rem)] max-w-3xl items-center justify-center">
+        <div className="w-full rounded-[2rem] border border-[#111315] bg-white p-6 text-center shadow-[8px_8px_0_#1ccad8]">
+          <p className="text-xs font-black uppercase tracking-[0.22em] text-[#263bff]">OAuth</p>
+          <h1 className="mt-3 text-4xl font-black text-[#111315]">Finishing sign in</h1>
+          <p className="mt-2 text-sm font-semibold text-zinc-500">Your account token is being verified.</p>
+          <LoaderTwo />
+        </div>
+      </div>
+    </main>
+  );
 };
 
 export default AuthSuccess;

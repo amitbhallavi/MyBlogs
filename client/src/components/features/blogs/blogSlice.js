@@ -37,6 +37,24 @@ const blogSlice = createSlice({
                 state.blogErrorMessage = action.payload
             })
 
+            .addCase(getMyBlogs.pending, (state) => {
+                state.blogLoading = true
+                state.blogError = false
+                state.blogSuccess = false
+            })
+            .addCase(getMyBlogs.fulfilled, (state, action) => {
+                state.blogLoading = false
+                state.blogError = false
+                state.blogSuccess = true
+                state.blogs = action.payload
+            })
+            .addCase(getMyBlogs.rejected, (state, action) => {
+                state.blogLoading = false
+                state.blogSuccess = false
+                state.blogError = true
+                state.blogErrorMessage = action.payload
+            })
+
 
             .addCase(getBlog.pending, (state) => {
                 state.blogLoading = true
@@ -115,6 +133,18 @@ const blogSlice = createSlice({
                 state.blogError = true
                 state.blogErrorMessage = action.payload
             })
+            .addCase(toggleBlogLike.fulfilled, (state, action) => {
+                state.blog = action.payload
+                state.blogs = state.blogs.map(blog => blog._id === action.payload._id ? action.payload : blog)
+            })
+            .addCase(addBlogComment.fulfilled, (state, action) => {
+                state.blog = action.payload
+                state.blogs = state.blogs.map(blog => blog._id === action.payload._id ? action.payload : blog)
+            })
+            .addCase(deleteBlogComment.fulfilled, (state, action) => {
+                state.blog = action.payload
+                state.blogs = state.blogs.map(blog => blog._id === action.payload._id ? action.payload : blog)
+            })
 
 
 
@@ -142,6 +172,20 @@ export const getBlogs = createAsyncThunk("FETCH_BLOGS", async (_, thunkAPI) => {
 
 })
 
+export const getMyBlogs = createAsyncThunk("FETCH_MY_BLOGS", async (_, thunkAPI) => {
+    const token = thunkAPI.getState().auth.user?.token
+
+    if (!token) {
+        return thunkAPI.rejectWithValue("Please login again")
+    }
+
+    try {
+        return await blogService.fetchMyBlogs(token);
+    } catch (error) {
+        return thunkAPI.rejectWithValue(error?.response?.data?.message || error.message || "Failed to fetch your blogs")
+    }
+})
+
 
 
 //get single blog -> 
@@ -159,11 +203,14 @@ export const getBlog = createAsyncThunk("FETCH_BLOG", async (id, thunkAPI) => {
 })
 
 
-// Create Blog Entry - No Login Required
+// Create blog entry
 
 export const createBlog = createAsyncThunk("CREATE_BLOG", async (formData, thunkAPI) => {
      
-    let token = thunkAPI.getState().auth.user.token
+    let token = thunkAPI.getState().auth.user?.token
+    if (!token) {
+        return thunkAPI.rejectWithValue("Please login again")
+    }
     
        
     try {
@@ -177,11 +224,14 @@ export const createBlog = createAsyncThunk("CREATE_BLOG", async (formData, thunk
 })
 
 
-// Remove Blog Entry - No Login Required
+// Remove blog entry
 
 export const removeBlog = createAsyncThunk("REMOVE_BLOG", async (blogId, thunkAPI) => {
      
-    let token = thunkAPI.getState().auth.user.token
+    let token = thunkAPI.getState().auth.user?.token
+    if (!token) {
+        return thunkAPI.rejectWithValue("Please login again")
+    }
     
        
     try {
@@ -198,7 +248,10 @@ export const removeBlog = createAsyncThunk("REMOVE_BLOG", async (blogId, thunkAP
 
 export const updateBlog = createAsyncThunk("UPDATE_BLOG", async ({blogId, formData}, thunkAPI) => {
      
-    let token = thunkAPI.getState().auth.user.token
+    let token = thunkAPI.getState().auth.user?.token
+    if (!token) {
+        return thunkAPI.rejectWithValue("Please login again")
+    }
     
        
     try {
@@ -211,3 +264,44 @@ export const updateBlog = createAsyncThunk("UPDATE_BLOG", async ({blogId, formDa
 
 })
 
+export const toggleBlogLike = createAsyncThunk("TOGGLE_BLOG_LIKE", async (blogId, thunkAPI) => {
+    const token = thunkAPI.getState().auth.user?.token
+
+    if (!token) {
+        return thunkAPI.rejectWithValue("Please login again")
+    }
+
+    try {
+        return await blogService.toggleLike(blogId, token);
+    } catch (error) {
+        return thunkAPI.rejectWithValue(error.message || "Failed to update like")
+    }
+})
+
+export const addBlogComment = createAsyncThunk("ADD_BLOG_COMMENT", async ({ blogId, text }, thunkAPI) => {
+    const token = thunkAPI.getState().auth.user?.token
+
+    if (!token) {
+        return thunkAPI.rejectWithValue("Please login again")
+    }
+
+    try {
+        return await blogService.addComment(blogId, text, token);
+    } catch (error) {
+        return thunkAPI.rejectWithValue(error.message || "Failed to add comment")
+    }
+})
+
+export const deleteBlogComment = createAsyncThunk("DELETE_BLOG_COMMENT", async ({ blogId, commentId }, thunkAPI) => {
+    const token = thunkAPI.getState().auth.user?.token
+
+    if (!token) {
+        return thunkAPI.rejectWithValue("Please login again")
+    }
+
+    try {
+        return await blogService.deleteComment(blogId, commentId, token);
+    } catch (error) {
+        return thunkAPI.rejectWithValue(error.message || "Failed to delete comment")
+    }
+})

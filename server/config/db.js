@@ -21,7 +21,7 @@ const connectDB = async () => {
     const conn = await mongoose.connect(process.env.MONGO_URI, {
       serverSelectionTimeoutMS: 10000,
     });
-    console.log(`MongoDB connected: ${conn.connection.name}`.bgGreen); 
+    console.log(`MongoDB connected: ${conn.connection.name}`.bgGreen.black); 
   } catch (error) {
     if (error.message?.toLowerCase().includes("bad auth")) {
       console.error("MongoDB authentication failed.");

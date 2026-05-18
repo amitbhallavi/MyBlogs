@@ -92,7 +92,7 @@ app.use(errorHandler);
 connectDB()
   .then(() => {
     app.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`.bgBlue);
+      console.log(`Server running on port ${PORT}`.bgBlue.white);
     });
   })
   .catch((error) => {
